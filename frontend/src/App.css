@@ -1,0 +1,97 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+    background: #EEAECA;
+    background: radial-gradient(
+        circle,
+        rgba(238, 174, 202, 1) 0%,
+        rgba(148, 187, 233, 1) 100%
+    );
+    font-family: 'Poppins', sans-serif;
+    min-height: 100vh;
+    margin: 0;
+}
+
+.container {
+  min-height: 100vh;
+  padding: 40px 20px;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+header h1 {
+  color: #2563eb;
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+header p {
+  color: #64748b;
+  font-size: 16px;
+}
+
+.mail-box {
+  max-width: 650px;
+  margin: auto;
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.mail-box h2 {
+  margin-bottom: 25px;
+  color: #1e293b;
+}
+
+.mail-box label {
+  display: block;
+  margin-bottom: 8px;
+  margin-top: 18px;
+  font-weight: bold;
+  color: #334155;
+}
+
+.mail-box input,
+.mail-box textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  font-size: 15px;
+  outline: none;
+  font-family: Arial, sans-serif;
+}
+
+.mail-box input:focus,
+.mail-box textarea:focus {
+  border-color: #2563eb;
+}
+
+.mail-box textarea {
+  resize: vertical;
+}
+
+.mail-box button {
+  width: 100%;
+  margin-top: 25px;
+  padding: 14px;
+  border: none;
+  border-radius: 7px;
+  background: #2563eb;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.mail-box button:hover {
+  background: #1d4ed8;
+}
