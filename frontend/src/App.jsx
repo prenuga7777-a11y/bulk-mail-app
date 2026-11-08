@@ -33,7 +33,7 @@ function App() {
       setLoading(true)
       setStatus('Sending emails...')
 
-      const response = await fetch('http://localhost:5000/api/send', {
+      const response = await fetch('https://bulk-mail-app-a0rd.onrender.com/api/send', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
