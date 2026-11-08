@@ -1,25 +1,19 @@
 const express = require('express')
 const cors = require('cors')
 const mongoose = require('mongoose')
-const nodemailer = require('nodemailer')
+const { Resend } = require('resend')
 require('dotenv').config()
 
 const Email = require('./models/Email')
 
 const app = express()
 
+// Resend Setup
+const resend = new Resend(process.env.RESEND_API_KEY)
+
 // Middleware
 app.use(cors())
 app.use(express.json())
-
-// Email Transporter
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    }
-})
 
 // Home Route
 app.get('/', (req, res) => {
@@ -55,8 +49,10 @@ app.post('/api/send', async (req, res) => {
 
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-        if (emailList.length === 0 ||
-            emailList.some(email => !emailPattern.test(email))) {
+        if (
+            emailList.length === 0 ||
+            emailList.some(email => !emailPattern.test(email))
+        ) {
             return res.status(400).json({
                 success: false,
                 message: 'Please enter valid email addresses!'
@@ -72,12 +68,17 @@ app.post('/api/send', async (req, res) => {
 
         await emailRecord.save()
 
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER,
+        // Send Email using Resend
+        const { data, error } = await resend.emails.send({
+            from: 'Bulk Mail App <onboarding@resend.dev>',
             to: emailList,
-            subject,
+            subject: subject,
             text: message
         })
+
+        if (error) {
+            throw new Error(error.message)
+        }
 
         emailRecord.status = 'Sent'
         await emailRecord.save()
@@ -93,7 +94,7 @@ app.post('/api/send', async (req, res) => {
 
         res.status(500).json({
             success: false,
-            message: 'Failed to send emails!'
+            message: error.message || 'Failed to send emails!'
         })
     }
 })
