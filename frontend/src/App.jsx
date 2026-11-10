@@ -11,7 +11,9 @@ function App() {
   const [history, setHistory] = useState([])
   const [showHistory, setShowHistory] = useState(false)
 
+  // Send Email Function
   const handleSend = async () => {
+
     if (!subject.trim() || !recipients.trim() || !message.trim()) {
       setStatus('Please fill all fields!')
       return
@@ -33,22 +35,25 @@ function App() {
       setLoading(true)
       setStatus('Sending emails...')
 
-      const response = await fetch('https://bulk-mail-app-a0rd.onrender.com/api/send', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          subject,
-          recipients: emailList,
-          message
-        })
-      })
+      const response = await fetch(
+        'https://bulk-mail-app-a0rd.onrender.com/api/send',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            subject,
+            recipients: emailList,
+            message
+          })
+        }
+      )
 
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.message)
+        throw new Error(data.message || 'Failed to send emails!')
       }
 
       setStatus('Emails sent successfully!')
@@ -58,26 +63,37 @@ function App() {
       setMessage('')
 
     } catch (error) {
+      console.error('Send Email Error:', error)
       setStatus(error.message || 'Failed to send emails!')
+
     } finally {
       setLoading(false)
     }
   }
 
+  // Email History Function
   const handleHistory = async () => {
+
     try {
-      const response = await fetch('http://localhost:5000/api/history')
+      setStatus('Loading email history...')
+
+      const response = await fetch(
+        'https://bulk-mail-app-a0rd.onrender.com/api/history'
+      )
+
       const data = await response.json()
 
       if (!response.ok) {
         throw new Error('Unable to fetch email history')
       }
 
-      setHistory(data.data)
+      setHistory(data.data || [])
       setShowHistory(true)
+      setStatus('')
 
     } catch (error) {
-      setStatus(error.message)
+      console.error('Email History Error:', error)
+      setStatus(error.message || 'Unable to fetch email history')
     }
   }
 
@@ -85,7 +101,7 @@ function App() {
     <div className="container">
 
       <header>
-        <h1>📧 Bulk Mail App</h1>
+        <h1> Bulk Mail App</h1>
         <p>Send emails to multiple recipients easily</p>
       </header>
 
@@ -94,6 +110,7 @@ function App() {
         <h2>Compose Email</h2>
 
         <label>Subject</label>
+
         <input
           type="text"
           placeholder="Enter email subject"
@@ -102,6 +119,7 @@ function App() {
         />
 
         <label>Recipient Emails</label>
+
         <textarea
           placeholder="Enter email addresses separated by commas"
           rows="4"
@@ -110,6 +128,7 @@ function App() {
         />
 
         <label>Email Message</label>
+
         <textarea
           placeholder="Write your email message here..."
           rows="8"
@@ -131,30 +150,54 @@ function App() {
 
         <hr />
 
-        <button type="button" onClick={handleHistory}>
+        <button
+          type="button"
+          onClick={handleHistory}
+        >
           View Email History
         </button>
 
         {showHistory && (
           <section className="history-section">
+
             <h2>Email History</h2>
 
             {history.length === 0 ? (
+
               <p>No email history available.</p>
+
             ) : (
+
               history.map((email) => (
+
                 <div className="history-card" key={email._id}>
+
                   <h3>{email.subject}</h3>
-                  <p><strong>Recipients:</strong> {email.recipients.join(', ')}</p>
-                  <p><strong>Message:</strong> {email.body}</p>
-                  <p><strong>Status:</strong> {email.status}</p>
+
+                  <p>
+                    <strong>Recipients:</strong>{' '}
+                    {email.recipients.join(', ')}
+                  </p>
+
+                  <p>
+                    <strong>Message:</strong> {email.body}
+                  </p>
+
+                  <p>
+                    <strong>Status:</strong> {email.status}
+                  </p>
+
                   <p>
                     <strong>Date:</strong>{' '}
                     {new Date(email.sentAt).toLocaleString()}
                   </p>
+
                 </div>
+
               ))
+
             )}
+
           </section>
         )}
 

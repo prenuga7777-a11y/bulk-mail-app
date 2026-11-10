@@ -30,23 +30,33 @@ app.get('/api/health', (req, res) => {
 
 // Send Email API
 app.post('/api/send', async (req, res) => {
+    let emailRecord
+
     try {
         const { subject, recipients, message } = req.body
 
-        if (!subject?.trim() || !recipients || !message?.trim()) {
+        // Validate fields
+        if (
+            !subject?.trim() ||
+            !recipients ||
+            !message?.trim()
+        ) {
             return res.status(400).json({
                 success: false,
                 message: 'All fields are required!'
             })
         }
 
-        const emailList = (Array.isArray(recipients)
-            ? recipients
-            : recipients.split(',')
+        // Convert recipients into array
+        const emailList = (
+            Array.isArray(recipients)
+                ? recipients
+                : recipients.split(',')
         )
             .map(email => email.trim())
             .filter(email => email !== '')
 
+        // Email validation
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
         if (
@@ -59,7 +69,13 @@ app.post('/api/send', async (req, res) => {
             })
         }
 
-        const emailRecord = new Email({
+        // Check Resend API Key
+        if (!process.env.RESEND_API_KEY) {
+            throw new Error('Resend API Key is missing!')
+        }
+
+        // Save email record in MongoDB
+        emailRecord = new Email({
             subject,
             body: message,
             recipients: emailList,
@@ -80,17 +96,21 @@ app.post('/api/send', async (req, res) => {
             throw new Error(error.message)
         }
 
+        // Update email status
         emailRecord.status = 'Sent'
+
         await emailRecord.save()
 
-        res.json({
+        // Success Response
+        res.status(200).json({
             success: true,
             message: 'Emails sent successfully!',
             data: emailRecord
         })
 
     } catch (error) {
-        console.error('Email Sending Error:', error.message)
+
+        console.error('Email Sending Error:', error)
 
         res.status(500).json({
             success: false,
@@ -101,16 +121,21 @@ app.post('/api/send', async (req, res) => {
 
 // Email History API
 app.get('/api/history', async (req, res) => {
-    try {
-        const emails = await Email.find().sort({ sentAt: -1 })
 
-        res.json({
+    try {
+
+        const emails = await Email.find().sort({
+            sentAt: -1
+        })
+
+        res.status(200).json({
             success: true,
             data: emails
         })
 
     } catch (error) {
-        console.error('History Error:', error.message)
+
+        console.error('History Error:', error)
 
         res.status(500).json({
             success: false,
@@ -119,17 +144,29 @@ app.get('/api/history', async (req, res) => {
     }
 })
 
-// Connect MongoDB and Start Server
+// MongoDB Connection and Server Start
 const PORT = process.env.PORT || 5000
 
 mongoose.connect(process.env.MONGO_URI)
+
     .then(() => {
+
         console.log('MongoDB Connected Successfully!')
 
         app.listen(PORT, () => {
-            console.log(`Bulk Mail Backend running on port ${PORT}`)
+            console.log(
+                `Bulk Mail Backend running on port ${PORT}`
+            )
         })
+
     })
+
     .catch(error => {
-        console.log('MongoDB Connection Error:', error.message)
+
+        console.log(
+            'MongoDB Connection Error:',
+            error.message
+        )
+
+        process.exit(1)
     })
